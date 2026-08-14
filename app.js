@@ -394,15 +394,43 @@
     }
   }
 
-  function fetchLamps() {
-    return fetch(`${SUPABASE_URL}/rest/v1/lamps?select=*&order=sort_order.asc`, {
+  // Прямой запрос к Supabase (Швеция) — самый свежий вариант, но у части
+  // мобильных операторов в РФ периодически включается режим "белого списка",
+  // когда любой иностранный сервис недоступен по таймауту. Поэтому у прямого
+  // запроса короткий таймаут (2.5с) — если не успел, сразу переключаемся
+  // на резервную копию каталога lamps.json, которая лежит на этом же домене
+  // (podium-sale.ru) и обновляется автоматически каждые 5 минут.
+  function fetchWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+  }
+
+  function fetchLampsDirect() {
+    return fetchWithTimeout(`${SUPABASE_URL}/rest/v1/lamps?select=*&order=sort_order.asc`, {
       headers: {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`
       }
-    }).then(r => {
+    }, 2500).then(r => {
       if (!r.ok) throw new Error('Supabase fetch failed: ' + r.status);
       return r.json();
+    });
+  }
+
+  function fetchLampsFallback() {
+    // lamps.json лежит рядом с сайтом на том же российском домене —
+    // недоступности "иностранного трафика" тут не бывает.
+    return fetch('/lamps.json', { cache: 'no-store' }).then(r => {
+      if (!r.ok) throw new Error('Fallback fetch failed: ' + r.status);
+      return r.json();
+    });
+  }
+
+  function fetchLamps() {
+    return fetchLampsDirect().catch(err => {
+      console.warn('Прямой запрос к Supabase не удался, пробуем резервную копию:', err);
+      return fetchLampsFallback();
     });
   }
 
@@ -424,7 +452,7 @@
       render();
     })
     .catch(err => {
-      console.error('Не удалось загрузить каталог из Supabase:', err);
+      console.error('Не удалось загрузить каталог ни напрямую, ни из резервной копии:', err);
       if (!cached) {
         fetchFailed = true;
         render();
