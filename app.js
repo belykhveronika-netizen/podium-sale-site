@@ -120,8 +120,8 @@
      с точки зрения сайта: по правилам доступа (RLS) на базе через него
      можно ЧИТАТЬ каталог, но нельзя ничего менять без входа в админку.
   ================================================================= */
-  const SUPABASE_URL = "https://svlvtqtgjxooohaopxpx.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHZ0cXRnanhvb29oYW9weHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NDMzODYsImV4cCI6MjEwMjAxOTM4Nn0.PGNEnvlI3OXYK8NgwI6NXKUXFSUEkfjZAAxtvd0hYls";
+  const SUPABASE_URL = "https://vjwnxbxtsglrvbxyhdza.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqd254Ynh0c2dscnZieHloZHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2ODc5ODgsImV4cCI6MjEwMjI2Mzk4OH0.LSrfwjY1f3PU13_W4WZlPfCmMNC9SUF91uMi1I5v0cU";
 
   // Телефон менеджера — показывается на каждой карточке и в модальном окне.
   const MANAGER_PHONE = "+7 (812) 702-64-80";
