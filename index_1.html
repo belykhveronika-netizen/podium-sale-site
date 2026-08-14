@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Распродажа шоурума — Салон света «Подиум»</title>
+<meta name="description" content="Распродажа европейского света шоурума «Подиум». Последние экземпляры напрямую от европейских фабрик.">
+<meta property="og:title" content="Распродажа шоурума — Салон света «Подиум»">
+<meta property="og:description" content="Последние экземпляры напрямую от европейских фабрик. Повтора не будет.">
+<link rel="preconnect" href="https://vjwnxbxtsglrvbxyhdza.supabase.co" crossorigin>
+<link rel="dns-prefetch" href="https://vjwnxbxtsglrvbxyhdza.supabase.co">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="styles.css?v=2">
+</head>
+<body>
+<div class="podium-hero">
+  <div class="podium-hero__inner">
+    <p class="podium-hero__eyebrow">Салон света «Подиум»</p>
+
+    <h1 class="podium-hero__title">Последние экземпляры <em>из шоурума</em></h1>
+
+    <p class="podium-hero__subtitle">
+      Партии закуплены напрямую у европейских фабрик — повтора не будет.
+      Когда модель раскуплена, она уходит из каталога навсегда.
+    </p>
+
+    
+    <div class="podium-hero__slogan" id="sloganWrap">
+      <p class="podium-hero__slogan-text podium-hero__slogan-text--base">Свет известный и оригинальный</p>
+      <p class="podium-hero__slogan-text podium-hero__slogan-text--glow" aria-hidden="true">Свет известный и оригинальный</p>
+    </div>
+
+    
+    
+
+    <div class="podium-hero__actions">
+      <a class="podium-hero__cta podium-hero__cta--primary" href="#lamp-sale">Смотреть коллекцию</a>
+      <a class="podium-hero__cta podium-hero__cta--ghost" href="tel:+78127026480">Позвонить менеджеру</a>
+    </div>
+  </div>
+</div>
+
+<div class="podium-brands">
+  <p class="podium-brands__label">Работаем напрямую с европейскими производителями</p>
+  <div class="podium-brands__marquee">
+    <div class="podium-brands__track" id="brandsRow"></div>
+  </div>
+</div>
+
+<div class="lamp-showcase" id="lamp-sale">
+  <div class="lamp-showcase__head">
+    <p class="lamp-showcase__eyebrow">Распродажа шоурума</p>
+    <h2 class="lamp-showcase__title">Светильники</h2>
+  </div>
+  <div class="lamp-filters">
+    <input type="text" id="lampSearch" class="lamp-search" placeholder="Поиск по названию, бренду, артикулу">
+    <div class="lamp-chips" id="typeChips">
+      <button class="lamp-chip is-active" data-value="all">Все</button>
+      <button class="lamp-chip" data-value="potolochnye">Потолочные</button>
+      <button class="lamp-chip" data-value="podvesnye">Подвесные</button>
+      <button class="lamp-chip" data-value="bra">Бра</button>
+      <button class="lamp-chip" data-value="torshery">Торшеры</button>
+      <button class="lamp-chip" data-value="nastolnye">Настольные</button>
+      <button class="lamp-chip" data-value="ulichnye">Уличные</button>
+    </div>
+    <select id="filterDiscount">
+      <option value="all">Любая скидка</option>
+      <option value="0-20">До −20%</option>
+      <option value="20-40">−20% … −40%</option>
+      <option value="40-100">От −40%</option>
+    </select>
+    <span class="lamp-filters__count" id="filterCount"></span>
+  </div>
+  <div class="lamp-grid" id="lampGrid"></div>
+  <div class="lamp-pager">
+    <button class="lamp-pager__btn" id="pagerPrev">← Назад</button>
+    <span class="lamp-pager__label" id="pagerLabel"></span>
+    <button class="lamp-pager__btn" id="pagerNext">Вперёд →</button>
+  </div>
+</div>
+
+<div class="lamp-modal" id="lampModal" aria-hidden="true">
+  <div class="lamp-modal__backdrop" data-close></div>
+  <div class="lamp-modal__panel">
+    <button class="lamp-modal__close" data-close aria-label="Закрыть">×</button>
+    <div class="lamp-modal__image" id="modalImage"></div>
+    <div class="lamp-modal__body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="podium-how">
+  <div class="podium-how__inner">
+    <h2 class="podium-how__title">Как купить со скидкой</h2>
+    <div class="podium-how__steps">
+      <div class="how-step">
+        <p class="how-step__num">01</p>
+        <h3>Находите модель</h3>
+        <p>Смотрите каталог, открываете карточку — цена, габариты и материал видны сразу.</p>
+      </div>
+      <div class="how-step">
+        <p class="how-step__num">02</p>
+        <h3>Бронируете</h3>
+        <p>Открыт номер прямо на карточке — звоните, модель отложат за вами.</p>
+      </div>
+      <div class="how-step">
+        <p class="how-step__num">03</p>
+        <h3>Забираете в салоне</h3>
+        <p>Оплата и получение — на Большой Разночинной, 30. Доставку обсуждаем отдельно.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="podium-coop" id="cooperation">
+  <div class="podium-coop__inner">
+
+    <div>
+      <p class="podium-coop__eyebrow">Дизайнерам и архитекторам</p>
+      <h2 class="podium-coop__title">Давайте сотрудничать</h2>
+      <p class="podium-coop__text">
+        Подбираем технику и собираем световые проекты для дизайнеров и архитекторов —
+        от одного светильника до полного плана освещения. Условия для партнёров обсуждаем индивидуально.
+      </p>
+      <div class="podium-coop__actions">
+        <a class="podium-coop__cta podium-coop__cta--primary" href="tel:+78127026480">Позвонить</a>
+        <a class="podium-coop__cta podium-coop__cta--ghost" href="#coopForm">Оставить заявку</a>
+      </div>
+    </div>
+
+    <form class="podium-coop__form" id="coopForm" action="https://formsubmit.co/info@salonpodium.ru" method="POST">
+      
+      <input type="hidden" name="_subject" value="Заявка на сотрудничество — Подиум">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="true">
+      <input type="hidden" name="_next" value="https://podium-rasprodazha-belykhveronika-5974s-projects.vercel.app/?sent=1#cooperation">
+
+      <div class="podium-coop__field">
+        <label for="coopName">Имя</label>
+        <input type="text" id="coopName" name="Имя" required>
+      </div>
+      <div class="podium-coop__field">
+        <label for="coopContact">Телефон или почта для связи</label>
+        <input type="text" id="coopContact" name="Контакт" required>
+      </div>
+      <div class="podium-coop__field">
+        <label for="coopMessage">О проекте</label>
+        <textarea id="coopMessage" name="О проекте" placeholder="Пара слов о проекте — необязательно"></textarea>
+      </div>
+      <button type="submit" class="podium-coop__submit">Обсудить проект</button>
+      <p class="podium-coop__note">Заявка сразу придёт на почту info@salonpodium.ru</p>
+    </form>
+
+  </div>
+</div>
+
+<div class="podium-contacts">
+  <div class="podium-contacts__inner">
+    <h2 class="podium-contacts__title">Контакты</h2>
+
+    <div class="podium-contacts__grid">
+
+      
+      <div class="podium-contacts__card">
+        <p class="podium-contacts__label">Салон света «Подиум»</p>
+
+        <p class="podium-contacts__line">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          Санкт-Петербург, ул. Большая Разночинная, д. 30, 3 этаж
+        </p>
+
+        <p class="podium-contacts__line">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M4 5c0 8.3 6.7 15 15 15l3-4-6-3-2 2c-2.5-1.2-4.8-3.5-6-6l2-2-3-6-4 0z"/></svg>
+          <a href="tel:+78127026480">+7 (812) 702-64-80</a>
+        </p>
+
+        <p class="podium-contacts__line">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg>
+          
+          <a href="mailto:info@salonpodium.ru">info@salonpodium.ru</a>
+        </p>
+
+        <p class="podium-contacts__line">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          <span class="podium-contacts__muted">Пн–Пт: 10:00–19:00</span>
+        </p>
+      </div>
+
+      
+      <div class="podium-contacts__card">
+        <p class="podium-contacts__label">Мы в соцсетях</p>
+        <p class="podium-contacts__line podium-contacts__muted" style="margin-bottom:18px">
+          Подписывайтесь — новинки и распродажи там раньше, чем на сайте
+        </p>
+        <div class="podium-contacts__socials">
+          
+          <a class="podium-contacts__social" href="https://vk.com/spbsalonpodium" target="_blank" rel="noopener" aria-label="VK">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.2 17.6c-5.6 0-8.8-3.9-9-10.3h2.9c.1 4.7 2.2 6.7 3.8 7.1V7.3h2.7v4.1c1.6-.2 3.3-2 3.9-4.1h2.7c-.4 2.6-2.3 4.5-3.7 5.2 1.4.6 3.5 2.2 4.3 5.1h-3c-.6-2-2.2-3.5-4.2-3.7v3.7z"/></svg>
+          </a>
+          
+          <a class="podium-contacts__social" href="https://t.me/spbsalonpodium" target="_blank" rel="noopener" aria-label="Telegram">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 3.5L2.7 11c-.9.4-.9 1.6.1 1.9l4.6 1.5 1.8 5.7c.3.9 1.4 1.1 2 .4l2.6-2.7 4.7 3.5c.8.6 1.9.1 2.1-.9l3-15.4c.2-1.1-.9-2-2.1-1.5zM8.5 14.2l8.6-6.9c.3-.2.6.2.3.4l-7 7.2-.3 3.5-1.6-4.2z"/></svg>
+          </a>
+          
+          <a class="podium-contacts__social" href="https://www.instagram.com/salonpodium/" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1"/></svg>
+          </a>
+        </div>
+      </div>
+
+      
+      <a class="podium-contacts__map" href="https://yandex.ru/maps/?text=Санкт-Петербург%2C%20ул.%20Большая%20Разночинная%2C%2030" target="_blank" rel="noopener">
+        <div>
+          <p class="podium-contacts__label">Как добраться</p>
+          <p class="podium-contacts__line" style="margin-bottom:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+            ул. Большая Разночинная, д. 30, 3 этаж
+          </p>
+        </div>
+        <span class="podium-contacts__map-cta">Открыть в Яндекс.Картах →</span>
+      </a>
+
+      
+      <div class="podium-contacts__card" style="display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <p class="podium-contacts__label">Сайт салона</p>
+          <p class="podium-contacts__line" style="margin-bottom:0">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.7 3.5 9s-1 6.5-3.5 9c-2.5-2.5-3.5-5.7-3.5-9s1-6.5 3.5-9z"/></svg>
+            <a href="https://www.salonpodium.ru/" target="_blank" rel="noopener">salonpodium.ru</a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<script src="app.js?v=2" defer></script>
+</body></html>
