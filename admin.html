@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админка — Подиум</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --bg: #141312;
+    --card-bg: #1e1c1a;
+    --accent: #f2efe7;
+    --text: #f3efe6;
+    --muted: #9c978c;
+    --hairline: rgba(243,239,230,0.14);
+    --danger: #c0503b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+  a { color: inherit; }
+
+  /* ===== Логин ===== */
+  .login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .login-box {
+    width: 100%;
+    max-width: 360px;
+    background: var(--card-bg);
+    border: 1px solid var(--hairline);
+    padding: 32px;
+    border-radius: 2px;
+  }
+  .login-box h1 {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    margin: 0 0 6px;
+  }
+  .login-box p.sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 24px;
+  }
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--hairline);
+    border-radius: 2px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 11px 18px;
+    cursor: pointer;
+    transition: background .2s ease;
+  }
+  .btn:hover { background: #e2ded2; }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--hairline);
+    font-weight: 500;
+  }
+  .btn-ghost:hover { border-color: var(--accent); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: #d96149; }
+  .btn-block { width: 100%; }
+  .error-msg { color: #e08a72; font-size: 13px; margin-top: 10px; min-height: 16px; }
+
+  /* ===== Панель после входа ===== */
+  .app { display: none; }
+  .app.is-visible { display: block; }
+  .topbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .topbar h1 { font-family: Georgia, serif; font-size: 18px; margin: 0; }
+  .topbar .who { font-size: 12px; color: var(--muted); }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px; }
+  .toolbar .count { color: var(--muted); font-size: 13px; }
+  .table-search {
+    background: var(--card-bg); color: var(--text); border: 1px solid var(--hairline);
+    border-radius: 2px; font-family: inherit; font-size: 13px; padding: 9px 12px;
+    min-width: 220px; flex: 1 1 220px; max-width: 320px;
+  }
+  .table-search:focus { outline: none; border-color: var(--accent); }
+
+  .lamp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .lamp-table th {
+    text-align: left; color: var(--muted); font-weight: 500;
+    padding: 10px 12px; border-bottom: 1px solid var(--hairline); font-size: 12px;
+  }
+  .lamp-table td { padding: 10px 12px; border-bottom: 1px solid var(--hairline); vertical-align: middle; }
+  .lamp-table tr:hover { background: rgba(242,239,231,0.03); }
+  .thumb {
+    width: 44px; height: 44px; border-radius: 2px; background: #2a2823;
+    background-size: cover; background-position: center;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 10px; flex-shrink: 0;
+  }
+  .row-actions { display: flex; gap: 6px; }
+  .row-actions button {
+    background: transparent; border: 1px solid var(--hairline); color: var(--text);
+    border-radius: 2px; padding: 6px 10px; font-size: 12px; cursor: pointer;
+  }
+  .row-actions button:hover { border-color: var(--accent); }
+  .row-actions .del:hover { border-color: var(--danger); color: #e08a72; }
+  .price-cell del { color: var(--muted); margin-left: 6px; font-size: 11px; }
+
+  /* ===== Модалка формы ===== */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(10,10,9,0.82);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 100;
+  }
+  .modal-backdrop.is-open { display: flex; }
+  .modal {
+    background: var(--card-bg); border: 1px solid var(--hairline);
+    width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto;
+    padding: 28px; border-radius: 2px;
+  }
+  .modal h2 { font-family: Georgia, serif; font-size: 20px; margin: 0 0 20px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .extra-row { display: flex; gap: 8px; margin-bottom: 8px; }
+  .extra-row input { flex: 1; }
+  .extra-row button { background: transparent; border: 1px solid var(--hairline); color: var(--muted); border-radius: 2px; padding: 0 10px; cursor: pointer; }
+  .image-preview {
+    width: 100%; height: 140px; border-radius: 2px; background: #2a2823;
+    background-size: cover; background-position: center;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted); font-size: 12px; margin-bottom: 10px; border: 1px solid var(--hairline);
+  }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+  .upload-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .upload-row input[type="file"] { flex: 1; font-size: 12px; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+
+  /* ===== Адаптация под телефон ===== */
+  .table-scroll { overflow-x: auto; }
+  @media (max-width: 640px) {
+    .topbar { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .topbar-actions { width: 100%; }
+    .topbar-actions .btn { flex: 1; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .lamp-table { min-width: 560px; }
+    .container { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== Экран входа ===== -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h1>Админка «Подиум»</h1>
+    <p class="sub">Вход только для сотрудников салона</p>
+    <div class="field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" autocomplete="username" value="admin@salonpodium.ru">
+    </div>
+    <div class="field">
+      <label for="loginPassword">Пароль</label>
+      <input type="password" id="loginPassword" autocomplete="current-password">
+    </div>
+    <button class="btn btn-block" id="loginBtn">Войти</button>
+    <p class="error-msg" id="loginError"></p>
+  </div>
+</div>
+
+<!-- ===== Основной интерфейс ===== -->
+<div class="app" id="app">
+  <div class="topbar">
+    <div>
+      <h1>Каталог светильников</h1>
+      <p class="who" id="whoAmI"></p>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn" id="addBtn">+ Добавить светильник</button>
+      <button class="btn btn-ghost" id="logoutBtn">Выйти</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="toolbar">
+      <input type="text" class="table-search" id="tableSearch" placeholder="Поиск по названию, бренду, артикулу">
+      <span class="count" id="tableCount"></span>
+    </div>
+    <div class="table-scroll">
+      <table class="lamp-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Название</th>
+            <th>Бренд / арт.</th>
+            <th>Тип</th>
+            <th>Цена</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="emptyState" style="display:none">Пока нет ни одной позиции — нажми «Добавить светильник»</div>
+  </div>
+</div>
+
+<!-- ===== Модалка добавления/редактирования ===== -->
+<div class="modal-backdrop" id="formBackdrop">
+  <div class="modal">
+    <h2 id="formTitle">Добавить светильник</h2>
+
+    <div class="image-preview" id="imagePreview">Нет фото</div>
+    <div class="upload-row">
+      <input type="file" id="imageFile" accept="image/*">
+      <button class="btn btn-ghost" id="uploadBtn" type="button">Загрузить фото</button>
+    </div>
+    <div class="field">
+      <label for="fImage">Или ссылка на фото</label>
+      <input type="text" id="fImage" placeholder="https://...">
+    </div>
+
+    <div class="grid-2">
+      <div class="field"><label for="fBrand">Бренд</label><input type="text" id="fBrand"></div>
+      <div class="field"><label for="fArticle">Артикул</label><input type="text" id="fArticle"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field">
+        <label for="fType">Тип</label>
+        <select id="fType">
+          <option value="potolochnye">Потолочные</option>
+          <option value="podvesnye">Подвесные</option>
+          <option value="bra">Бра</option>
+          <option value="torshery">Торшеры</option>
+          <option value="nastolnye">Настольные</option>
+          <option value="ulichnye">Уличные</option>
+        </select>
+      </div>
+      <div class="field"><label for="fName">Название</label><input type="text" id="fName"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label for="fPrice">Цена по акции</label><input type="number" id="fPrice"></div>
+      <div class="field"><label for="fOldPrice">Старая цена (необязательно)</label><input type="number" id="fOldPrice"></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label for="fDimensions">Габариты</label><input type="text" id="fDimensions" placeholder="выс. 42 см, ⌀ 30 см"></div>
+      <div class="field"><label for="fMaterial">Материал</label><input type="text" id="fMaterial"></div>
+    </div>
+    <div class="field"><label for="fDescription">Описание</label><textarea id="fDescription" rows="3"></textarea></div>
+
+    <div class="field">
+      <label>Доп. характеристики (необязательно)</label>
+      <div id="extraRows"></div>
+      <button class="btn btn-ghost" id="addExtraBtn" type="button" style="margin-top:4px">+ строка</button>
+    </div>
+
+    <p class="error-msg" id="formError"></p>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="cancelBtn" type="button">Отмена</button>
+      <button class="btn" id="saveBtn" type="button">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = "https://svlvtqtgjxooohaopxpx.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN2bHZ0cXRnanhvb29oYW9weHB4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NDMzODYsImV4cCI6MjEwMjAxOTM4Nn0.PGNEnvlI3OXYK8NgwI6NXKUXFSUEkfjZAAxtvd0hYls";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const loginScreen = document.getElementById('loginScreen');
+const app = document.getElementById('app');
+const loginBtn = document.getElementById('loginBtn');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const whoAmI = document.getElementById('whoAmI');
+
+function esc(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+async function checkSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    loginScreen.style.display = 'none';
+    app.classList.add('is-visible');
+    whoAmI.textContent = session.user.email;
+    loadLamps();
+  } else {
+    loginScreen.style.display = 'flex';
+    app.classList.remove('is-visible');
+  }
+}
+
+loginBtn.addEventListener('click', async () => {
+  loginError.textContent = '';
+  loginBtn.disabled = true;
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  loginBtn.disabled = false;
+  if (error) {
+    loginError.textContent = 'Неверный email или пароль';
+    return;
+  }
+  checkSession();
+});
+
+logoutBtn.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  checkSession();
+});
+
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loginBtn.click();
+});
+
+// ===== Таблица =====
+const tableBody = document.getElementById('tableBody');
+const tableCount = document.getElementById('tableCount');
+const tableSearch = document.getElementById('tableSearch');
+const emptyState = document.getElementById('emptyState');
+let currentLamps = [];
+let loadError = null;
+
+function typeLabel(t) {
+  return ({
+    potolochnye: 'Потолочные', podvesnye: 'Подвесные', bra: 'Бра',
+    torshery: 'Торшеры', nastolnye: 'Настольные', ulichnye: 'Уличные'
+  })[t] || t;
+}
+
+async function loadLamps() {
+  tableBody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Загрузка…</td></tr>`;
+  const { data, error } = await supabase.from('lamps').select('*').order('sort_order', { ascending: true });
+  loadError = error ? error.message : null;
+  currentLamps = data || [];
+  renderTable();
+}
+
+function renderTable() {
+  if (loadError) {
+    tableBody.innerHTML = `<tr><td colspan="6">Ошибка загрузки: ${esc(loadError)}</td></tr>`;
+    tableCount.textContent = '';
+    emptyState.style.display = 'none';
+    return;
+  }
+
+  const query = tableSearch.value.trim().toLowerCase();
+  const filtered = query
+    ? currentLamps.filter(l =>
+        l.name.toLowerCase().includes(query) ||
+        l.brand.toLowerCase().includes(query) ||
+        l.article.toLowerCase().includes(query))
+    : currentLamps;
+
+  tableCount.textContent = query
+    ? `Показано: ${filtered.length} из ${currentLamps.length}`
+    : `Всего: ${currentLamps.length}`;
+  emptyState.style.display = currentLamps.length === 0 ? 'block' : 'none';
+
+  if (currentLamps.length > 0 && filtered.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Ничего не найдено по запросу «${esc(tableSearch.value)}»</td></tr>`;
+    return;
+  }
+
+  tableBody.innerHTML = filtered.map(l => `
+    <tr data-id="${l.id}">
+      <td><div class="thumb" ${l.image ? `style="background-image:url('${esc(l.image)}')"` : ''}>${l.image ? '' : '—'}</div></td>
+      <td>${esc(l.name)}</td>
+      <td>${esc(l.brand)} · ${esc(l.article)}</td>
+      <td>${esc(typeLabel(l.type))}</td>
+      <td class="price-cell">${Number(l.price).toLocaleString('ru-RU')} ₽${l.old_price ? `<del>${Number(l.old_price).toLocaleString('ru-RU')} ₽</del>` : ''}</td>
+      <td>
+        <div class="row-actions">
+          <button class="edit" data-id="${l.id}">Изменить</button>
+          <button class="dup" data-id="${l.id}">Копия</button>
+          <button class="del" data-id="${l.id}">Удалить</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  tableBody.querySelectorAll('.edit').forEach(btn => {
+    btn.addEventListener('click', () => openForm(currentLamps.find(l => l.id == btn.dataset.id)));
+  });
+  tableBody.querySelectorAll('.dup').forEach(btn => {
+    btn.addEventListener('click', () => openForm(currentLamps.find(l => l.id == btn.dataset.id), true));
+  });
+  tableBody.querySelectorAll('.del').forEach(btn => {
+    btn.addEventListener('click', () => deleteLamp(btn.dataset.id));
+  });
+}
+
+async function deleteLamp(id) {
+  if (!confirm('Удалить эту позицию? Это необратимо.')) return;
+  const { error } = await supabase.from('lamps').delete().eq('id', id);
+  if (error) { alert('Ошибка удаления: ' + error.message); return; }
+  loadLamps();
+}
+
+// ===== Форма добавления/редактирования =====
+const formBackdrop = document.getElementById('formBackdrop');
+const formTitle = document.getElementById('formTitle');
+const formError = document.getElementById('formError');
+const extraRows = document.getElementById('extraRows');
+const imagePreview = document.getElementById('imagePreview');
+let editingId = null;
+
+const fields = ['fBrand','fArticle','fType','fName','fPrice','fOldPrice','fDimensions','fMaterial','fDescription','fImage'];
+
+function clearForm() {
+  fields.forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('fType').value = 'potolochnye';
+  extraRows.innerHTML = '';
+  imagePreview.style.backgroundImage = '';
+  imagePreview.textContent = 'Нет фото';
+  formError.textContent = '';
+  document.getElementById('imageFile').value = '';
+}
+
+function addExtraRow(label = '', value = '') {
+  const row = document.createElement('div');
+  row.className = 'extra-row';
+  row.innerHTML = `
+    <input type="text" placeholder="Название (напр. Цоколь)" class="extra-label" value="${esc(label)}">
+    <input type="text" placeholder="Значение (напр. E27)" class="extra-value" value="${esc(value)}">
+    <button type="button" title="Удалить строку">×</button>
+  `;
+  row.querySelector('button').addEventListener('click', () => row.remove());
+  extraRows.appendChild(row);
+}
+
+document.getElementById('addExtraBtn').addEventListener('click', () => addExtraRow());
+
+function openForm(lamp, duplicate) {
+  clearForm();
+  editingId = (lamp && !duplicate) ? lamp.id : null;
+  formTitle.textContent = duplicate ? 'Копия светильника' : (lamp ? 'Изменить светильник' : 'Добавить светильник');
+  if (lamp) {
+    document.getElementById('fBrand').value = lamp.brand || '';
+    document.getElementById('fArticle').value = duplicate ? '' : (lamp.article || '');
+    document.getElementById('fType').value = lamp.type || 'potolochnye';
+    document.getElementById('fName').value = lamp.name || '';
+    document.getElementById('fPrice').value = lamp.price || '';
+    document.getElementById('fOldPrice').value = lamp.old_price || '';
+    document.getElementById('fDimensions').value = lamp.dimensions || '';
+    document.getElementById('fMaterial').value = lamp.material || '';
+    document.getElementById('fDescription').value = lamp.description || '';
+    document.getElementById('fImage').value = lamp.image || '';
+    if (lamp.image) {
+      imagePreview.style.backgroundImage = `url('${lamp.image}')`;
+      imagePreview.textContent = '';
+    }
+    (Array.isArray(lamp.extra) ? lamp.extra : []).forEach(e => addExtraRow(e.label, e.value));
+    if (duplicate) {
+      // Артикул — обязательное поле, у копии его нужно вписать заново,
+      // чтобы не было двух товаров с одинаковым артикулом.
+      document.getElementById('fArticle').focus();
+    }
+  }
+  formBackdrop.classList.add('is-open');
+}
+
+document.getElementById('addBtn').addEventListener('click', () => openForm(null));
+tableSearch.addEventListener('input', () => renderTable());
+document.getElementById('cancelBtn').addEventListener('click', () => formBackdrop.classList.remove('is-open'));
+formBackdrop.addEventListener('click', e => { if (e.target === formBackdrop) formBackdrop.classList.remove('is-open'); });
+
+document.getElementById('fImage').addEventListener('input', e => {
+  const url = e.target.value.trim();
+  if (url) {
+    imagePreview.style.backgroundImage = `url('${url}')`;
+    imagePreview.textContent = '';
+  } else {
+    imagePreview.style.backgroundImage = '';
+    imagePreview.textContent = 'Нет фото';
+  }
+});
+
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const fileInput = document.getElementById('imageFile');
+  const file = fileInput.files[0];
+  if (!file) { alert('Сначала выбери файл'); return; }
+  const uploadBtn = document.getElementById('uploadBtn');
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'Загружаю…';
+  const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+  const { error } = await supabase.storage.from('lamp-images').upload(path, file, { upsert: true });
+  uploadBtn.disabled = false;
+  uploadBtn.textContent = 'Загрузить фото';
+  if (error) { alert('Ошибка загрузки: ' + error.message); return; }
+  const { data } = supabase.storage.from('lamp-images').getPublicUrl(path);
+  document.getElementById('fImage').value = data.publicUrl;
+  imagePreview.style.backgroundImage = `url('${data.publicUrl}')`;
+  imagePreview.textContent = '';
+});
+
+document.getElementById('saveBtn').addEventListener('click', async () => {
+  formError.textContent = '';
+  const brand = document.getElementById('fBrand').value.trim();
+  const article = document.getElementById('fArticle').value.trim();
+  const name = document.getElementById('fName').value.trim();
+  const price = Number(document.getElementById('fPrice').value);
+
+  if (!brand || !article || !name || !price) {
+    formError.textContent = 'Заполни бренд, артикул, название и цену';
+    return;
+  }
+
+  const extra = Array.from(extraRows.querySelectorAll('.extra-row')).map(row => ({
+    label: row.querySelector('.extra-label').value.trim(),
+    value: row.querySelector('.extra-value').value.trim()
+  })).filter(e => e.label && e.value);
+
+  const payload = {
+    brand,
+    article,
+    type: document.getElementById('fType').value,
+    name,
+    price,
+    old_price: document.getElementById('fOldPrice').value ? Number(document.getElementById('fOldPrice').value) : null,
+    dimensions: document.getElementById('fDimensions').value.trim(),
+    material: document.getElementById('fMaterial').value.trim(),
+    description: document.getElementById('fDescription').value.trim(),
+    image: document.getElementById('fImage').value.trim(),
+    extra
+  };
+
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+
+  let error;
+  if (editingId) {
+    ({ error } = await supabase.from('lamps').update(payload).eq('id', editingId));
+  } else {
+    const maxOrder = currentLamps.reduce((m, l) => Math.max(m, l.sort_order || 0), 0);
+    ({ error } = await supabase.from('lamps').insert({ ...payload, sort_order: maxOrder + 1 }));
+  }
+
+  saveBtn.disabled = false;
+  if (error) { formError.textContent = 'Ошибка сохранения: ' + error.message; return; }
+
+  formBackdrop.classList.remove('is-open');
+  loadLamps();
+});
+
+checkSession();
+</script>
+</body>
+</html>
