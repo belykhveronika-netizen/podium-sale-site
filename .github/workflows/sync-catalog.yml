@@ -1,0 +1,35 @@
+name: Sync catalog from Supabase
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch catalog from Supabase and write lamps.json
+        env:
+          SUPABASE_URL: "https://vjwnxbxtsglrvbxyhdza.supabase.co"
+          SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqd254Ynh0c2dscnZieHloZHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2ODc5ODgsImV4cCI6MjEwMjI2Mzk4OH0.LSrfwjY1f3PU13_W4WZlPfCmMNC9SUF91uMi1I5v0cU"
+        run: |
+          curl -s "$SUPABASE_URL/rest/v1/lamps?select=*&order=sort_order.asc" -H "apikey: $SUPABASE_ANON_KEY" -H "Authorization: Bearer $SUPABASE_ANON_KEY" -o lamps.json
+          python3 -c "import json; d=json.load(open('lamps.json')); assert isinstance(d, list); print('OK, rows:', len(d))"
+
+      - name: Commit if changed
+        run: |
+          git config user.name "catalog-sync-bot"
+          git config user.email "actions@github.com"
+          if ! git diff --quiet -- lamps.json; then
+            git add lamps.json
+            git commit -m "Auto-sync catalog"
+            git push
+          else
+            echo "No changes"
+          fi
