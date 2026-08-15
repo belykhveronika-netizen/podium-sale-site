@@ -299,7 +299,7 @@
 </div>
 
 <script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.3';
 
 const SUPABASE_URL = "https://vjwnxbxtsglrvbxyhdza.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqd254Ynh0c2dscnZieHloZHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2ODc5ODgsImV4cCI6MjEwMjI2Mzk4OH0.LSrfwjY1f3PU13_W4WZlPfCmMNC9SUF91uMi1I5v0cU";
@@ -489,7 +489,7 @@ function openForm(lamp, duplicate) {
     document.getElementById('fDescription').value = lamp.description || '';
     document.getElementById('fImage').value = lamp.image || '';
     if (lamp.image) {
-      imagePreview.style.backgroundImage = `url('${lamp.image}')`;
+      imagePreview.style.backgroundImage = `url('${esc(lamp.image)}')`;
       imagePreview.textContent = '';
     }
     (Array.isArray(lamp.extra) ? lamp.extra : []).forEach(e => addExtraRow(e.label, e.value));
@@ -510,7 +510,7 @@ formBackdrop.addEventListener('click', e => { if (e.target === formBackdrop) for
 document.getElementById('fImage').addEventListener('input', e => {
   const url = e.target.value.trim();
   if (url) {
-    imagePreview.style.backgroundImage = `url('${url}')`;
+    imagePreview.style.backgroundImage = `url('${esc(url)}')`;
     imagePreview.textContent = '';
   } else {
     imagePreview.style.backgroundImage = '';
