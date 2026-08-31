@@ -140,9 +140,9 @@
       .replace(/'/g, '&#39;');
   }
 
-  function formatPrice(n) {
-    return Number(n).toLocaleString('ru-RU') + ' ₽';
-  }
+function formatPrice(n) {
+  return Number(n).toLocaleString('de-DE') + ' €';
+}
 
   function discountPercent(l) {
     if (!l.oldPrice) return 0;
