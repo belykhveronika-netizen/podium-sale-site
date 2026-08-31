@@ -410,8 +410,7 @@ function renderTable() {
       <td>${esc(l.name)}</td>
       <td>${esc(l.brand)} · ${esc(l.article)}</td>
       <td>${esc(typeLabel(l.type))}</td>
-      <td class="price-cell">${Number(l.price).toLocaleString('ru-RU')} ₽${l.old_price ? `<del>${Number(l.old_price).toLocaleString('ru-RU')} ₽</del>` : ''}</td>
-      <td>
+      <td class="price-cell">${Number(l.price).toLocaleString('de-DE')} €${l.old_price ? `<del>${Number(l.old_price).toLocaleString('de-DE')} €</del>` : ''}</td>
         <div class="row-actions">
           <button class="edit" data-id="${l.id}">Изменить</button>
           <button class="dup" data-id="${l.id}">Копия</button>
