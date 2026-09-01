@@ -256,12 +256,10 @@ function formatPrice(n) {
   // ===== Поиск, категории-чипы, скидка и постраничная навигация =====
   const searchInput = document.getElementById('lampSearch');
   const chips = Array.from(document.querySelectorAll('.lamp-chip'));
-  const discountSelect = document.getElementById('filterDiscount');
   const countLabel = document.getElementById('filterCount');
   const pagerPrev = document.getElementById('pagerPrev');
   const pagerNext = document.getElementById('pagerNext');
-  const pagerLabel = document.getElementById('pagerLabel');
-
+  
   const PAGE_SIZE = 16;
   let currentPage = 1;
   let activeType = 'all';
@@ -270,8 +268,6 @@ function formatPrice(n) {
 
   function getFiltered() {
     const query = searchInput.value.trim().toLowerCase();
-    const discountVal = discountSelect.value;
-
     return lamps.filter(l => {
       const matchesType = activeType === 'all' || l.type === activeType;
       const matchesQuery = !query ||
@@ -279,13 +275,8 @@ function formatPrice(n) {
         l.brand.toLowerCase().includes(query) ||
         l.article.toLowerCase().includes(query);
 
-      let matchesDiscount = true;
-      if (discountVal !== 'all') {
-        const [min, max] = discountVal.split('-').map(Number);
-        const d = discountPercent(l);
-        matchesDiscount = d >= min && d < max;
-      }
-      return matchesType && matchesQuery && matchesDiscount;
+      return matchesType && matchesQuery;
+    
     });
   }
 
@@ -347,7 +338,6 @@ function formatPrice(n) {
   });
 
   searchInput.addEventListener('input', () => { currentPage = 1; render(); });
-  discountSelect.addEventListener('change', () => { currentPage = 1; renderPaged(); });
   pagerPrev.addEventListener('click', () => { currentPage--; renderPaged(); });
   pagerNext.addEventListener('click', () => { currentPage++; renderPaged(); });
 
