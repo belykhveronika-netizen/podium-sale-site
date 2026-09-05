@@ -140,9 +140,9 @@
       .replace(/'/g, '&#39;');
   }
 
-function formatPrice(n) {
-  return Number(n).toLocaleString('de-DE') + ' €';
-}
+  function formatPrice(n) {
+    return Number(n).toLocaleString('ru-RU') + ' €';
+  }
 
   function discountPercent(l) {
     if (!l.oldPrice) return 0;
@@ -163,6 +163,7 @@ function formatPrice(n) {
     return `
       <div class="lamp-card" data-type="${esc(l.type || 'all')}" data-discount="${discount}" data-index="${index}" tabindex="0" role="button" aria-label="${esc(l.name)}, подробнее">
         <span class="lamp-card__badge">Распродажа</span>
+        ${discount > 0 ? `<span class="lamp-card__discount-flag">-${discount}%</span>` : ''}
         <div class="lamp-card__image" ${bg}>${img}</div>
         <div class="lamp-card__glow"></div>
         <div class="lamp-card__footer">
@@ -171,6 +172,7 @@ function formatPrice(n) {
           <p class="lamp-card__price-row">
             <span class="lamp-card__price">${formatPrice(l.price)}</span>
             ${oldPriceHtml}
+            ${discount > 0 ? `<span class="lamp-card__discount">-${discount}%</span>` : ''}
           </p>
           <a class="lamp-card__phone" href="${phoneHref()}" onclick="event.stopPropagation()">${phoneIconSVG}${MANAGER_PHONE}</a>
           <p class="lamp-card__more">Подробнее и характеристики →</p>
@@ -192,6 +194,7 @@ function formatPrice(n) {
     modalImage.innerHTML = img;
 
     const oldPriceHtml = l.oldPrice ? `<span class="lamp-modal__old-price">${formatPrice(l.oldPrice)}</span>` : '';
+    const modalDiscount = discountPercent(l);
 
     // Базовые характеристики + любые дополнительные из поля extra
     const baseSpecs = [
@@ -211,6 +214,7 @@ function formatPrice(n) {
       <p class="lamp-modal__price-row">
         <span class="lamp-modal__price">${formatPrice(l.price)}</span>
         ${oldPriceHtml}
+        ${modalDiscount > 0 ? `<span class="lamp-modal__discount">-${modalDiscount}%</span>` : ''}
       </p>
       <a class="lamp-modal__phone" href="${phoneHref()}">${phoneIconSVG}${MANAGER_PHONE}</a>
       <ul class="lamp-modal__specs">${specsHtml}</ul>
@@ -256,10 +260,12 @@ function formatPrice(n) {
   // ===== Поиск, категории-чипы, скидка и постраничная навигация =====
   const searchInput = document.getElementById('lampSearch');
   const chips = Array.from(document.querySelectorAll('.lamp-chip'));
+  const discountSelect = document.getElementById('filterDiscount');
   const countLabel = document.getElementById('filterCount');
   const pagerPrev = document.getElementById('pagerPrev');
   const pagerNext = document.getElementById('pagerNext');
-  
+  const pagerLabel = document.getElementById('pagerLabel');
+
   const PAGE_SIZE = 16;
   let currentPage = 1;
   let activeType = 'all';
@@ -268,6 +274,8 @@ function formatPrice(n) {
 
   function getFiltered() {
     const query = searchInput.value.trim().toLowerCase();
+    const discountVal = discountSelect.value;
+
     return lamps.filter(l => {
       const matchesType = activeType === 'all' || l.type === activeType;
       const matchesQuery = !query ||
@@ -275,8 +283,13 @@ function formatPrice(n) {
         l.brand.toLowerCase().includes(query) ||
         l.article.toLowerCase().includes(query);
 
-      return matchesType && matchesQuery;
-    
+      let matchesDiscount = true;
+      if (discountVal !== 'all') {
+        const [min, max] = discountVal.split('-').map(Number);
+        const d = discountPercent(l);
+        matchesDiscount = d >= min && d < max;
+      }
+      return matchesType && matchesQuery && matchesDiscount;
     });
   }
 
@@ -338,6 +351,7 @@ function formatPrice(n) {
   });
 
   searchInput.addEventListener('input', () => { currentPage = 1; render(); });
+  discountSelect.addEventListener('change', () => { currentPage = 1; renderPaged(); });
   pagerPrev.addEventListener('click', () => { currentPage--; renderPaged(); });
   pagerNext.addEventListener('click', () => { currentPage++; renderPaged(); });
 

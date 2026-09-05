@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://vjwnxbxtsglrvbxyhdza.supabase.co" crossorigin>
 <link rel="dns-prefetch" href="https://vjwnxbxtsglrvbxyhdza.supabase.co">
 <link rel="icon" href="/favicon.ico" sizes="any">
-<link rel="stylesheet" href="styles.css?v=5">
+<link rel="stylesheet" href="styles.css?v=6">
 </head>
 <body>
 <div class="podium-hero">
@@ -64,6 +64,12 @@
       <button class="lamp-chip" data-value="nastolnye">Настольные</button>
       <button class="lamp-chip" data-value="ulichnye">Уличные</button>
     </div>
+    <select id="filterDiscount">
+      <option value="all">Любая скидка</option>
+      <option value="0-20">До −20%</option>
+      <option value="20-40">−20% … −40%</option>
+      <option value="40-100">От −40%</option>
+    </select>
     <span class="lamp-filters__count" id="filterCount"></span>
   </div>
   <div class="lamp-grid" id="lampGrid"></div>
@@ -228,5 +234,5 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=3" defer></script>
+<script src="app.js?v=4" defer></script>
 </body></html>

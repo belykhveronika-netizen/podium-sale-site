@@ -533,6 +533,7 @@ html, body {
     font-weight: 700;
     color: #ff5a3c;
     text-shadow: 0 0 8px rgba(255,90,60,0.65), 0 0 2px rgba(255,90,60,0.9);
+    letter-spacing: 0.01em;
   }
   .lamp-card__discount-flag {
     position: absolute;
@@ -541,10 +542,12 @@ html, body {
     z-index: 2;
     font-size: 12px;
     font-weight: 700;
+    letter-spacing: 0.02em;
     color: #fff;
     background: linear-gradient(135deg, #ff6a3d, #ff2d55);
     padding: 5px 10px;
     border-radius: 1px;
+    box-shadow: 0 0 12px rgba(255,60,60,0.75), 0 0 2px rgba(255,255,255,0.4) inset;
     animation: lampDiscountGlow 1.8s ease-in-out infinite;
   }
   @keyframes lampDiscountGlow {
