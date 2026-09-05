@@ -156,6 +156,7 @@
   }
   .modal h2 { font-family: Georgia, serif; font-size: 20px; margin: 0 0 20px; }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 16px; }
   .extra-row { display: flex; gap: 8px; margin-bottom: 8px; }
   .extra-row input { flex: 1; }
   .extra-row button { background: transparent; border: 1px solid var(--hairline); color: var(--muted); border-radius: 2px; padding: 0 10px; cursor: pointer; }
@@ -178,6 +179,7 @@
     .topbar-actions { width: 100%; }
     .topbar-actions .btn { flex: 1; }
     .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
     .lamp-table { min-width: 560px; }
     .container { padding: 16px; }
   }
@@ -273,10 +275,12 @@
       </div>
       <div class="field"><label for="fName">Название</label><input type="text" id="fName"></div>
     </div>
-    <div class="grid-2">
-      <div class="field"><label for="fPrice">Цена по акции</label><input type="number" id="fPrice"></div>
-      <div class="field"><label for="fOldPrice">Старая цена (необязательно)</label><input type="number" id="fOldPrice"></div>
+    <div class="grid-3">
+      <div class="field"><label for="fOldPrice">Розничная цена</label><input type="number" id="fOldPrice" placeholder="напр. 1000"></div>
+      <div class="field"><label for="fDiscount">Скидка, %</label><input type="number" id="fDiscount" placeholder="напр. 50" min="0" max="99"></div>
+      <div class="field"><label for="fPrice">Цена со скидкой</label><input type="number" id="fPrice"></div>
     </div>
+    <p id="priceHint" style="margin:-8px 0 16px;font-size:12px;color:var(--muted);"></p>
     <div class="grid-2">
       <div class="field"><label for="fDimensions">Габариты</label><input type="text" id="fDimensions" placeholder="выс. 42 см, ⌀ 30 см"></div>
       <div class="field"><label for="fMaterial">Материал</label><input type="text" id="fMaterial"></div>
@@ -410,7 +414,8 @@ function renderTable() {
       <td>${esc(l.name)}</td>
       <td>${esc(l.brand)} · ${esc(l.article)}</td>
       <td>${esc(typeLabel(l.type))}</td>
-      <td class="price-cell">${Number(l.price).toLocaleString('de-DE')} €${l.old_price ? `<del>${Number(l.old_price).toLocaleString('de-DE')} €</del>` : ''}</td>
+      <td class="price-cell">${Number(l.price).toLocaleString('ru-RU')} €${l.old_price ? `<del>${Number(l.old_price).toLocaleString('ru-RU')} €</del>` : ''}</td>
+      <td>
         <div class="row-actions">
           <button class="edit" data-id="${l.id}">Изменить</button>
           <button class="dup" data-id="${l.id}">Копия</button>
@@ -446,7 +451,7 @@ const extraRows = document.getElementById('extraRows');
 const imagePreview = document.getElementById('imagePreview');
 let editingId = null;
 
-const fields = ['fBrand','fArticle','fType','fName','fPrice','fOldPrice','fDimensions','fMaterial','fDescription','fImage'];
+const fields = ['fBrand','fArticle','fType','fName','fPrice','fOldPrice','fDiscount','fDimensions','fMaterial','fDescription','fImage'];
 
 function clearForm() {
   fields.forEach(id => { document.getElementById(id).value = ''; });
@@ -456,7 +461,64 @@ function clearForm() {
   imagePreview.textContent = 'Нет фото';
   formError.textContent = '';
   document.getElementById('imageFile').value = '';
+  updatePriceHint();
 }
+
+// ===== Калькулятор скидки: розничная цена + процент <-> цена со скидкой =====
+const fOldPriceEl = document.getElementById('fOldPrice');
+const fDiscountEl = document.getElementById('fDiscount');
+const fPriceEl = document.getElementById('fPrice');
+const priceHintEl = document.getElementById('priceHint');
+
+function updatePriceHint() {
+  const retail = Number(fOldPriceEl.value);
+  const sale = Number(fPriceEl.value);
+  if (retail > 0 && sale > 0 && sale < retail) {
+    const discount = Math.round((1 - sale / retail) * 100);
+    priceHintEl.textContent = `Скидка ${discount}% от розничной цены ${retail.toLocaleString('ru-RU')} €`;
+  } else if (retail > 0 && sale >= retail && fPriceEl.value !== '') {
+    priceHintEl.textContent = 'Цена со скидкой не ниже розничной — скидки не будет видно на сайте';
+  } else if (retail > 0) {
+    priceHintEl.textContent = 'Укажите скидку в % или сразу цену со скидкой — пересчитается автоматически';
+  } else {
+    priceHintEl.textContent = 'Если не указать розничную цену — скидка на сайте не отображается, просто одна цена';
+  }
+}
+
+function recalcPriceFromDiscount() {
+  const retail = Number(fOldPriceEl.value);
+  if (retail > 0 && fDiscountEl.value !== '') {
+    const discount = Number(fDiscountEl.value);
+    fPriceEl.value = Math.round(retail * (1 - discount / 100));
+  }
+  updatePriceHint();
+}
+
+function recalcDiscountFromPrice() {
+  const retail = Number(fOldPriceEl.value);
+  const sale = Number(fPriceEl.value);
+  if (retail > 0 && fPriceEl.value !== '') {
+    const discount = Math.round((1 - sale / retail) * 100);
+    fDiscountEl.value = discount > 0 ? discount : '';
+  }
+  updatePriceHint();
+}
+
+function recalcOnRetailChange() {
+  // Если скидка % уже задана — держим её и пересчитываем цену.
+  // Иначе, если уже есть цена со скидкой — просто обновляем % по факту.
+  if (fDiscountEl.value !== '') {
+    recalcPriceFromDiscount();
+  } else if (fPriceEl.value !== '') {
+    recalcDiscountFromPrice();
+  } else {
+    updatePriceHint();
+  }
+}
+
+fOldPriceEl.addEventListener('input', recalcOnRetailChange);
+fDiscountEl.addEventListener('input', recalcPriceFromDiscount);
+fPriceEl.addEventListener('input', recalcDiscountFromPrice);
 
 function addExtraRow(label = '', value = '') {
   const row = document.createElement('div');
@@ -483,6 +545,10 @@ function openForm(lamp, duplicate) {
     document.getElementById('fName').value = lamp.name || '';
     document.getElementById('fPrice').value = lamp.price || '';
     document.getElementById('fOldPrice').value = lamp.old_price || '';
+    if (lamp.old_price && lamp.price && lamp.price < lamp.old_price) {
+      document.getElementById('fDiscount').value = Math.round((1 - lamp.price / lamp.old_price) * 100);
+    }
+    updatePriceHint();
     document.getElementById('fDimensions').value = lamp.dimensions || '';
     document.getElementById('fMaterial').value = lamp.material || '';
     document.getElementById('fDescription').value = lamp.description || '';
