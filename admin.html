@@ -343,13 +343,13 @@
   </div>
 </div>
 
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.3';
-  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+const { createClient } = window.supabase;
 const SUPABASE_URL = "https://vjwnxbxtsglrvbxyhdza.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqd254Ynh0c2dscnZieHloZHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2ODc5ODgsImV4cCI6MjEwMjI2Mzk4OH0.LSrfwjY1f3PU13_W4WZlPfCmMNC9SUF91uMi1I5v0cU";
   
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const loginScreen = document.getElementById('loginScreen');
 const app = document.getElementById('app');
 const loginBtn = document.getElementById('loginBtn');
@@ -364,7 +364,7 @@ function esc(str) {
 }
 
 async function checkSession() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     loginScreen.style.display = 'none';
     app.classList.add('is-visible');
@@ -382,7 +382,7 @@ loginBtn.addEventListener('click', async () => {
   loginBtn.disabled = true;
   const email = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await sb.auth.signInWithPassword({ email, password });
   loginBtn.disabled = false;
   if (error) {
     loginError.textContent = 'Неверный email или пароль';
@@ -392,7 +392,7 @@ loginBtn.addEventListener('click', async () => {
 });
 
 logoutBtn.addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   checkSession();
 });
 
@@ -417,7 +417,7 @@ function typeLabel(t) {
 
 async function loadLamps() {
   tableBody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Загрузка…</td></tr>`;
-  const { data, error } = await supabase.from('lamps').select('*').order('sort_order', { ascending: true });
+  const { data, error } = await sb.from('lamps').select('*').order('sort_order', { ascending: true });
   loadError = error ? error.message : null;
   currentLamps = data || [];
   renderTable();
@@ -430,7 +430,7 @@ const rateApplyBtn = document.getElementById('rateApplyBtn');
 const rateStatus = document.getElementById('rateStatus');
 
 async function loadRate() {
-  const { data, error } = await supabase.from('settings').select('value').eq('key', 'eur_rate').maybeSingle();
+  const { data, error } = await sb.from('settings').select('value').eq('key', 'eur_rate').maybeSingle();
   if (error || !data) {
     rateCurrentValue.textContent = '—';
     return;
@@ -449,7 +449,7 @@ rateApplyBtn.addEventListener('click', async () => {
   rateApplyBtn.disabled = true;
   rateStatus.textContent = 'Сохраняю…';
   rateStatus.className = 'rate-panel__status';
-  const { error } = await supabase.from('settings')
+  const { error } = await sb.from('settings')
     .update({ value: String(val), updated_at: new Date().toISOString() })
     .eq('key', 'eur_rate');
   rateApplyBtn.disabled = false;
@@ -520,7 +520,7 @@ function renderTable() {
 
 async function deleteLamp(id) {
   if (!confirm('Удалить эту позицию? Это необратимо.')) return;
-  const { error } = await supabase.from('lamps').delete().eq('id', id);
+  const { error } = await sb.from('lamps').delete().eq('id', id);
   if (error) { alert('Ошибка удаления: ' + error.message); return; }
   loadLamps();
 }
@@ -673,11 +673,11 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
   uploadBtn.disabled = true;
   uploadBtn.textContent = 'Загружаю…';
   const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-  const { error } = await supabase.storage.from('lamp-images').upload(path, file, { upsert: true });
+  const { error } = await sb.storage.from('lamp-images').upload(path, file, { upsert: true });
   uploadBtn.disabled = false;
   uploadBtn.textContent = 'Загрузить фото';
   if (error) { alert('Ошибка загрузки: ' + error.message); return; }
-  const { data } = supabase.storage.from('lamp-images').getPublicUrl(path);
+  const { data } = sb.storage.from('lamp-images').getPublicUrl(path);
   document.getElementById('fImage').value = data.publicUrl;
   imagePreview.style.backgroundImage = `url('${data.publicUrl}')`;
   imagePreview.textContent = '';
@@ -719,10 +719,10 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
 
   let error;
   if (editingId) {
-    ({ error } = await supabase.from('lamps').update(payload).eq('id', editingId));
+    ({ error } = await sb.from('lamps').update(payload).eq('id', editingId));
   } else {
     const maxOrder = currentLamps.reduce((m, l) => Math.max(m, l.sort_order || 0), 0);
-    ({ error } = await supabase.from('lamps').insert({ ...payload, sort_order: maxOrder + 1 }));
+    ({ error } = await sb.from('lamps').insert({ ...payload, sort_order: maxOrder + 1 }));
   }
 
   saveBtn.disabled = false;
