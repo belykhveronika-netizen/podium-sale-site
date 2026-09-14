@@ -343,9 +343,8 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script>
-const { createClient } = window.supabase;
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.112.3';
   
 const SUPABASE_URL = "https://vjwnxbxtsglrvbxyhdza.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqd254Ynh0c2dscnZieHloZHphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY2ODc5ODgsImV4cCI6MjEwMjI2Mzk4OH0.LSrfwjY1f3PU13_W4WZlPfCmMNC9SUF91uMi1I5v0cU";
