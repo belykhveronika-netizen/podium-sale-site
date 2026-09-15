@@ -405,7 +405,7 @@
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`
       }
-    }, 2500).then(r => {
+    }, 6000).then(r => {
       if (!r.ok) throw new Error('Rate fetch failed: ' + r.status);
       return r.json();
     }).then(rows => {
@@ -482,7 +482,7 @@
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${SUPABASE_ANON_KEY}`
       }
-    }, 2500).then(r => {
+    }, 6000).then(r => {
       if (!r.ok) throw new Error('Supabase fetch failed: ' + r.status);
       return r.json();
     });
