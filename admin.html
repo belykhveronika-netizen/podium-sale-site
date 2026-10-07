@@ -695,6 +695,12 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
   const name = document.getElementById('fName').value.trim();
   const price = Number(document.getElementById('fPrice').value);
 
+  const qtyRaw = document.getElementById('fQuantity').value.trim();
+  const quantity = Number(qtyRaw);
+  if (qtyRaw === '' || !Number.isInteger(quantity) || quantity < 0) {
+    formError.textContent = 'Укажи количество — целое число от 0 (0 = нет в наличии)';
+    return;
+  }
   if (!brand || !article || !name || !price) {
     formError.textContent = 'Заполни бренд, артикул, название и цену';
     return;
@@ -711,7 +717,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     type: document.getElementById('fType').value,
     name,
     price,
-    quantity: Math.max(0, parseInt(document.getElementById('fQuantity').value, 10) || 0),
+    quantity,
     old_price: document.getElementById('fOldPrice').value ? Number(document.getElementById('fOldPrice').value) : null,
     dimensions: document.getElementById('fDimensions').value.trim(),
     material: document.getElementById('fMaterial').value.trim(),
