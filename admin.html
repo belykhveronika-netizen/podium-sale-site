@@ -273,6 +273,7 @@
             <th>Бренд / арт.</th>
             <th>Тип</th>
             <th>Цена</th>
+            <th>Кол-во</th>
             <th></th>
           </tr>
         </thead>
@@ -322,6 +323,7 @@
       <div class="field"><label for="fPrice">Цена со скидкой</label><input type="number" id="fPrice"></div>
     </div>
     <p id="priceHint" style="margin:-8px 0 16px;font-size:12px;color:var(--muted);"></p>
+    <div class="field"><label for="fQuantity">Количество, шт.</label><input type="number" id="fQuantity" min="0" step="1" value="1"></div>
     <div class="grid-2">
       <div class="field"><label for="fDimensions">Габариты</label><input type="text" id="fDimensions" placeholder="выс. 42 см, ⌀ 30 см"></div>
       <div class="field"><label for="fMaterial">Материал</label><input type="text" id="fMaterial"></div>
@@ -416,7 +418,7 @@ function typeLabel(t) {
 }
 
 async function loadLamps() {
-  tableBody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Загрузка…</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="7" style="color:var(--muted)">Загрузка…</td></tr>`;
   const { data, error } = await sb.from('lamps').select('*').order('sort_order', { ascending: true });
   loadError = error ? error.message : null;
   currentLamps = data || [];
@@ -466,7 +468,7 @@ rateApplyBtn.addEventListener('click', async () => {
 
 function renderTable() {
   if (loadError) {
-    tableBody.innerHTML = `<tr><td colspan="6">Ошибка загрузки: ${esc(loadError)}</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7">Ошибка загрузки: ${esc(loadError)}</td></tr>`;
     tableCount.textContent = '';
     emptyState.style.display = 'none';
     return;
@@ -486,7 +488,7 @@ function renderTable() {
   emptyState.style.display = currentLamps.length === 0 ? 'block' : 'none';
 
   if (currentLamps.length > 0 && filtered.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="6" style="color:var(--muted)">Ничего не найдено по запросу «${esc(tableSearch.value)}»</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" style="color:var(--muted)">Ничего не найдено по запросу «${esc(tableSearch.value)}»</td></tr>`;
     return;
   }
 
@@ -497,6 +499,7 @@ function renderTable() {
       <td>${esc(l.brand)} · ${esc(l.article)}</td>
       <td>${esc(typeLabel(l.type))}</td>
       <td class="price-cell">${Number(l.price).toLocaleString('ru-RU')} €${l.old_price ? `<del>${Number(l.old_price).toLocaleString('ru-RU')} €</del>` : ''}</td>
+      <td>${l.quantity == null ? 1 : l.quantity} шт.</td>
       <td>
         <div class="row-actions">
           <button class="edit" data-id="${l.id}">Изменить</button>
@@ -537,6 +540,7 @@ const fields = ['fBrand','fArticle','fType','fName','fPrice','fOldPrice','fDisco
 
 function clearForm() {
   fields.forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('fQuantity').value = 1;
   document.getElementById('fType').value = 'potolochnye';
   extraRows.innerHTML = '';
   imagePreview.style.backgroundImage = '';
@@ -627,6 +631,7 @@ function openForm(lamp, duplicate) {
     document.getElementById('fName').value = lamp.name || '';
     document.getElementById('fPrice').value = lamp.price || '';
     document.getElementById('fOldPrice').value = lamp.old_price || '';
+    document.getElementById('fQuantity').value = (lamp.quantity == null ? 1 : lamp.quantity);
     if (lamp.old_price && lamp.price && lamp.price < lamp.old_price) {
       document.getElementById('fDiscount').value = Math.round((1 - lamp.price / lamp.old_price) * 100);
     }
@@ -706,6 +711,7 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
     type: document.getElementById('fType').value,
     name,
     price,
+    quantity: Math.max(0, parseInt(document.getElementById('fQuantity').value, 10) || 0),
     old_price: document.getElementById('fOldPrice').value ? Number(document.getElementById('fOldPrice').value) : null,
     dimensions: document.getElementById('fDimensions').value.trim(),
     material: document.getElementById('fMaterial').value.trim(),

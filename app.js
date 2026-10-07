@@ -150,6 +150,12 @@
     return Math.round((1 - l.price / l.oldPrice) * 100);
   }
 
+  // Количество на складе: null/undefined (старый кэш) считаем как 1 шт.
+  function qtyText(l) {
+    const q = (l.quantity == null) ? 1 : Number(l.quantity);
+    return q > 0 ? `В наличии: ${q} шт.` : 'Нет в наличии';
+  }
+
   function phoneHref() {
     return `tel:${MANAGER_PHONE.replace(/[^\d+]/g, '')}`;
   }
@@ -175,6 +181,7 @@
             ${oldPriceHtml}
             ${discount > 0 ? `<span class="lamp-card__discount">-${discount}%</span>` : ''}
           </p>
+          <p class="lamp-card__qty">${qtyText(l)}</p>
           <a class="lamp-card__phone" href="${phoneHref()}" onclick="event.stopPropagation()">${phoneIconSVG}${MANAGER_PHONE}</a>
           <p class="lamp-card__more">Подробнее и характеристики →</p>
         </div>
@@ -200,7 +207,8 @@
     // Базовые характеристики + любые дополнительные из поля extra
     const baseSpecs = [
       { label: 'Габариты', value: l.dimensions },
-      { label: 'Материал', value: l.material }
+      { label: 'Материал', value: l.material },
+      { label: 'Количество', value: qtyText(l).replace('В наличии: ', '') }
     ];
     const allSpecs = baseSpecs.concat(Array.isArray(l.extra) ? l.extra : []);
     const specsHtml = allSpecs
@@ -440,6 +448,7 @@
       material: row.material,
       description: row.description,
       image: row.image,
+      quantity: row.quantity == null ? 1 : row.quantity,
       extra: Array.isArray(row.extra) ? row.extra : []
     }));
   }

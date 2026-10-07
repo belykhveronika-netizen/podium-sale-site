@@ -26,6 +26,7 @@ Supabase JS SDK, напрямую с клиента (нет отдельного
 | `material` | text | Материал, свободный текст. |
 | `description` | text | Короткое описание для модалки. |
 | `image` | text, nullable | Публичная ссылка на Supabase Storage (`lamp-images`). Пусто — показывается SVG-заглушка. |
+| `quantity` | integer, NOT NULL, default 1 | Количество (шт.) в наличии; правится вручную в админке, на витрине показывается в карточке и модалке. 0 = «Нет в наличии». |
 | `extra` | jsonb (массив), nullable | Дополнительные пары `{label, value}` для блока характеристик в модалке. |
 | `sort_order` | integer, nullable | Порядок отображения в каталоге (`order=sort_order.asc`, `nulls last` при ручных SQL-выгрузках). |
 | `created_at` | timestamptz | Время создания строки (видно в `lamps.json`). |
