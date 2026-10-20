@@ -161,7 +161,7 @@
   }
 
   function renderCard(l, index) {
-    const safeImage = l.image ? esc(l.image) : '';
+    const safeImage = (l.thumb || l.image) ? esc(l.thumb || l.image) : '';
     const bg = safeImage ? `style="background-image:url('${safeImage}')"` : '';
     const img = safeImage ? '' : placeholderSVG;
     const oldPriceHtml = l.oldPrice ? `<span class="lamp-card__old-price">${formatPrice(l.oldPrice)}</span>` : '';
@@ -464,6 +464,7 @@
       description: row.description,
       image: row.image_local || row.image,
       imageRemote: row.image,
+      thumb: row.image_thumb || '',
       quantity: row.quantity == null ? 1 : row.quantity,
       extra: Array.isArray(row.extra) ? row.extra : []
     }));
@@ -537,10 +538,12 @@
   function refreshFromSupabase() {
     return fetchLampsDirect().then(rows => {
       const localById = {};
-      lamps.forEach(l => { if (l.id != null) localById[l.id] = l.image; });
+      const thumbById = {};
+      lamps.forEach(l => { if (l.id != null) { localById[l.id] = l.image; thumbById[l.id] = l.thumb; } });
       const fresh = mapRows(rows).map(l => {
         const local = localById[l.id];
         if (local && l.imageRemote && local !== l.imageRemote) l.image = local;
+        if (thumbById[l.id]) l.thumb = thumbById[l.id];
         return l;
       });
       if (!fresh.length) return;

@@ -17,6 +17,8 @@ import json, os, sys, urllib.request, urllib.parse, io
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 IMG_DIR = os.path.join(ROOT, 'img')
 MAX_SIDE = 1000
+THUMB_SIDE = 480
+THUMB_DIR = os.path.join(IMG_DIR, 't')
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '').rstrip('/')
 KEY = os.environ.get('SUPABASE_ANON_KEY', '')
 
@@ -32,23 +34,24 @@ def get(url, timeout=30):
         return r.read()
 
 
-def shrink(data, name):
+def shrink(data, name, side=None, quality=82):
+    side = side or MAX_SIDE
     if Image is None:
         return data
     try:
         im = Image.open(io.BytesIO(data))
         im.load()
-        if max(im.size) <= MAX_SIDE:
+        if max(im.size) <= side:
             return data
-        im.thumbnail((MAX_SIDE, MAX_SIDE))
+        im.thumbnail((side, side))
         out = io.BytesIO()
         ext = name.rsplit('.', 1)[-1].lower()
         if ext in ('jpg', 'jpeg'):
-            im.convert('RGB').save(out, 'JPEG', quality=82, optimize=True)
+            im.convert('RGB').save(out, 'JPEG', quality=quality, optimize=True)
         elif ext == 'png':
             im.save(out, 'PNG', optimize=True)
         elif ext == 'webp':
-            im.save(out, 'WEBP', quality=82)
+            im.save(out, 'WEBP', quality=quality)
         else:
             return data
         return out.getvalue()
@@ -58,7 +61,7 @@ def shrink(data, name):
 
 
 def main():
-    os.makedirs(IMG_DIR, exist_ok=True)
+    os.makedirs(THUMB_DIR, exist_ok=True)
     path = os.path.join(ROOT, 'lamps.json')
     lamps = json.load(open(path, encoding='utf-8'))
     if not isinstance(lamps, list) or not lamps:
@@ -85,9 +88,21 @@ def main():
                 fail += 1
                 continue
         l['image_local'] = 'img/' + urllib.parse.quote(name)
+        # Лёгкое превью для карточек сетки (480 px) — в разы меньше оригинала
+        tdest = os.path.join(THUMB_DIR, name)
+        if not os.path.exists(tdest):
+            try:
+                with open(dest, 'rb') as f:
+                    tdata = shrink(f.read(), name, THUMB_SIDE, 78)
+                with open(tdest, 'wb') as f:
+                    f.write(tdata)
+            except Exception as e:
+                print('  превью не создано', name, e)
+        if os.path.exists(tdest):
+            l['image_thumb'] = 'img/t/' + urllib.parse.quote(name)
         ok += 1
 
-    json.dump(lamps, open(path, 'w', encoding='utf-8'), ensure_ascii=False)
+    json.dump(lamps, open(path, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print(f'images: ok={ok} new={new} failed={fail}')
 
     try:
