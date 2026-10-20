@@ -426,8 +426,22 @@
   const cachedRate = readRateCache();
   if (cachedRate) eurRate = cachedRate;
 
+  // Курс: rate.json с нашего домена (быстро, обновляется каждые 5 минут),
+  // затем самое свежее значение из Supabase, если оно доступно.
+  let rateFromDb = false;
+  fetch('/rate.json', { cache: 'no-store' })
+    .then(r => { if (!r.ok) throw new Error('rate.json ' + r.status); return r.json(); })
+    .then(j => {
+      if (rateFromDb || !(j && j.rate > 0)) return;
+      eurRate = Number(j.rate);
+      writeRateCache(eurRate);
+      render();
+    })
+    .catch(() => {});
+
   fetchRate()
     .then(rate => {
+      rateFromDb = true;
       eurRate = rate;
       writeRateCache(rate);
       render();
@@ -438,6 +452,7 @@
 
   function mapRows(rows) {
     return rows.map(row => ({
+      id: row.id,
       brand: row.brand,
       article: row.article,
       type: row.type,
@@ -447,7 +462,8 @@
       dimensions: row.dimensions,
       material: row.material,
       description: row.description,
-      image: row.image,
+      image: row.image_local || row.image,
+      imageRemote: row.image,
       quantity: row.quantity == null ? 1 : row.quantity,
       extra: Array.isArray(row.extra) ? row.extra : []
     }));
@@ -506,10 +522,33 @@
     });
   }
 
+  // Порядок: сначала lamps.json с нашего домена (быстро и без VPN), затем
+  // в фоне — свежие данные из Supabase. Если lamps.json почему-то недоступен,
+  // ждём Supabase напрямую.
   function fetchLamps() {
-    return fetchLampsDirect().catch(err => {
-      console.warn('Прямой запрос к Supabase не удался, пробуем резервную копию:', err);
-      return fetchLampsFallback();
+    return fetchLampsFallback().catch(err => {
+      console.warn('lamps.json недоступен, пробуем Supabase:', err);
+      return fetchLampsDirect();
+    });
+  }
+
+  // Фоновое обновление из Supabase: подменяет список только если ответ
+  // пришёл; локальные копии фото (image_local) берём из lamps.json по id.
+  function refreshFromSupabase() {
+    return fetchLampsDirect().then(rows => {
+      const localById = {};
+      lamps.forEach(l => { if (l.id != null) localById[l.id] = l.image; });
+      const fresh = mapRows(rows).map(l => {
+        const local = localById[l.id];
+        if (local && l.imageRemote && local !== l.imageRemote) l.image = local;
+        return l;
+      });
+      if (!fresh.length) return;
+      lamps = fresh;
+      writeCache(fresh);
+      render();
+    }).catch(err => {
+      console.warn('Фоновое обновление из Supabase не удалось:', err);
     });
   }
 
@@ -529,6 +568,7 @@
       fetchFailed = false;
       writeCache(fresh);
       render();
+      refreshFromSupabase();
     })
     .catch(err => {
       console.error('Не удалось загрузить каталог ни напрямую, ни из резервной копии:', err);
