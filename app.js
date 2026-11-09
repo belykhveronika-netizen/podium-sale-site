@@ -140,6 +140,14 @@
       .replace(/'/g, '&#39;');
   }
 
+  // URL картинки вставляется в CSS url('...') внутри атрибута style —
+  // HTML-экранирование там не защищает (атрибут декодируется до CSS-парсинга),
+  // поэтому просто отбрасываем URL с кавычками/скобками/бэкслешем.
+  function safeCssUrl(u) {
+    const s = String(u || '').trim();
+    return /['"\\()\s]/.test(s) ? '' : s;
+  }
+
   function formatPrice(n) {
     const rub = Math.round(Number(n) * eurRate);
     return rub.toLocaleString('ru-RU') + ' ₽';
@@ -160,9 +168,12 @@
     return `tel:${MANAGER_PHONE.replace(/[^\d+]/g, '')}`;
   }
 
+  // Ленивая загрузка фонов карточек: URL кладём в data-bg, а реальный
+  // background-image ставит IntersectionObserver, когда карточка близко к экрану.
+  // Так на медленном соединении грузятся только видимые миниатюры, а не все сразу.
   function renderCard(l, index) {
-    const safeImage = (l.thumb || l.image) ? esc(l.thumb || l.image) : '';
-    const bg = safeImage ? `style="background-image:url('${safeImage}')"` : '';
+    const safeImage = safeCssUrl(l.thumb || l.image);
+    const bg = safeImage ? `data-bg="${esc(safeImage)}"` : '';
     const img = safeImage ? '' : placeholderSVG;
     const oldPriceHtml = l.oldPrice ? `<span class="lamp-card__old-price">${formatPrice(l.oldPrice)}</span>` : '';
     const discount = discountPercent(l);
@@ -190,13 +201,39 @@
 
   const grid = document.getElementById('lampGrid');
 
+  // Подключаем реальный background-image карточке, когда она приближается
+  // к видимой области (запас 200px, чтобы не было заметной подгрузки).
+  const bgObserver = ('IntersectionObserver' in window)
+    ? new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          loadCardBg(entry.target);
+          bgObserver.unobserve(entry.target);
+        });
+      }, { rootMargin: '200px' })
+    : null;
+
+  function loadCardBg(el) {
+    const url = el.getAttribute('data-bg');
+    if (!url) return;
+    el.style.backgroundImage = `url('${url}')`;
+    el.removeAttribute('data-bg');
+  }
+
+  function observeCardBgs() {
+    grid.querySelectorAll('[data-bg]').forEach(el => {
+      if (bgObserver) bgObserver.observe(el);
+      else loadCardBg(el); // старые браузеры без IntersectionObserver — грузим сразу
+    });
+  }
+
   // ===== Модальное окно с подробной карточкой =====
   const modal = document.getElementById('lampModal');
   const modalImage = document.getElementById('modalImage');
   const modalBody = document.getElementById('modalBody');
 
   function openModal(l) {
-    const safeImage = l.image ? esc(l.image) : '';
+    const safeImage = safeCssUrl(l.image);
     const img = safeImage ? '' : placeholderSVG;
     modalImage.setAttribute('style', safeImage ? `background-image:url('${safeImage}')` : '');
     modalImage.innerHTML = img;
@@ -281,6 +318,7 @@
   let activeType = 'all';
   let lamps = [];
   let fetchFailed = false;
+  let catalogReady = false; // true после первой отрисовки каталога
 
   function getFiltered() {
     const query = searchInput.value.trim().toLowerCase();
@@ -339,6 +377,7 @@
     }
 
     grid.innerHTML = currentPageItems.map(renderCard).join('');
+    observeCardBgs();
     countLabel.textContent = `Найдено: ${filtered.length}`;
     pagerInput.value = currentPage; pagerInput.max = totalPages; pagerTotal.textContent = totalPages;
     pagerPrev.disabled = currentPage <= 1;
@@ -435,7 +474,7 @@
       if (rateFromDb || !(j && j.rate > 0)) return;
       eurRate = Number(j.rate);
       writeRateCache(eurRate);
-      render();
+      if (catalogReady) render();
     })
     .catch(() => {});
 
@@ -444,7 +483,7 @@
       rateFromDb = true;
       eurRate = rate;
       writeRateCache(rate);
-      render();
+      if (catalogReady) render();
     })
     .catch(err => {
       console.warn('Не удалось получить курс евро, используем последний известный:', err);
@@ -453,10 +492,10 @@
   function mapRows(rows) {
     return rows.map(row => ({
       id: row.id,
-      brand: row.brand,
-      article: row.article,
-      type: row.type,
-      name: row.name,
+      brand: row.brand || '',
+      article: row.article || '',
+      type: row.type || '',
+      name: row.name || '',
       price: row.price,
       oldPrice: row.old_price || '',
       dimensions: row.dimensions,
@@ -493,7 +532,7 @@
   // Прямой запрос к Supabase (Швеция) — самый свежий вариант, но у части
   // мобильных операторов в РФ периодически включается режим "белого списка",
   // когда любой иностранный сервис недоступен по таймауту. Поэтому у прямого
-  // запроса короткий таймаут (2.5с) — если не успел, сразу переключаемся
+  // запроса ограниченный таймаут (6с) — если не успел, сразу переключаемся
   // на резервную копию каталога lamps.json, которая лежит на этом же домене
   // (podium-sale.ru) и обновляется автоматически каждые 5 минут.
   function fetchWithTimeout(url, options, timeoutMs) {
@@ -559,6 +598,7 @@
   if (cached) {
     // Показываем мгновенно то, что уже есть в браузере
     lamps = cached.lamps;
+    catalogReady = true;
     render();
   } else {
     countLabel.textContent = 'Загрузка каталога…';
@@ -569,6 +609,7 @@
       const fresh = mapRows(rows);
       lamps = fresh;
       fetchFailed = false;
+      catalogReady = true;
       writeCache(fresh);
       render();
       refreshFromSupabase();
