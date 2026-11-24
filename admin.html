@@ -244,6 +244,8 @@
     </div>
     <div class="topbar-actions">
       <button class="btn" id="addBtn">+ Добавить светильник</button>
+      <button class="btn" id="importBtn" title="Загрузить JSON-файл с массивом позиций">Импорт JSON</button>
+      <input type="file" id="importFile" accept=".json,application/json" style="display:none">
       <button class="btn btn-ghost" id="logoutBtn">Выйти</button>
     </div>
   </div>
@@ -655,6 +657,54 @@ function openForm(lamp, duplicate) {
 }
 
 document.getElementById('addBtn').addEventListener('click', () => openForm(null));
+
+// ===== Импорт позиций из JSON-файла =====
+// Формат: массив объектов с полями lamps (brand, article, type, name, price,
+// old_price, quantity, dimensions, material, description, image, extra, sort_order).
+// Такой файл можно получить из Excel-выгрузки — попросите подготовить его.
+document.getElementById('importBtn').addEventListener('click', () => document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  let items;
+  try {
+    items = JSON.parse(await file.text());
+    if (!Array.isArray(items) || !items.length) throw new Error('пустой или не массив');
+  } catch (err) {
+    alert('Не удалось прочитать JSON: ' + err.message);
+    return;
+  }
+  const maxOrder = currentLamps.reduce((m, l) => Math.max(m, l.sort_order || 0), 0);
+  const rows = items.map((it, i) => ({
+    brand: String(it.brand || '').trim(),
+    article: String(it.article || '').trim(),
+    type: it.type || 'potolochnye',
+    name: String(it.name || '').trim(),
+    price: Number(it.price) || 0,
+    old_price: it.old_price ? Number(it.old_price) : null,
+    quantity: Number.isInteger(it.quantity) ? it.quantity : 1,
+    dimensions: String(it.dimensions || ''),
+    material: String(it.material || ''),
+    description: String(it.description || ''),
+    image: String(it.image || ''),
+    extra: Array.isArray(it.extra) ? it.extra : [],
+    sort_order: it.sort_order != null ? it.sort_order : maxOrder + i + 1
+  })).filter(r => r.brand && r.article && r.name && r.price > 0);
+  if (!rows.length) { alert('В файле нет ни одной валидной позиции (нужны brand, article, name, price)'); return; }
+  if (!confirm(`Импортировать ${rows.length} позиций?`)) return;
+  const btn = document.getElementById('importBtn');
+  btn.disabled = true;
+  let done = 0, failed = 0;
+  for (let i = 0; i < rows.length; i += 50) {
+    const { error } = await sb.from('lamps').insert(rows.slice(i, i + 50));
+    if (error) { failed += rows.slice(i, i + 50).length; alert('Ошибка импорта: ' + error.message); break; }
+    done += rows.slice(i, i + 50).length;
+  }
+  btn.disabled = false;
+  alert(`Готово: импортировано ${done}${failed ? `, ошибок: ${failed}` : ''}`);
+  loadLamps();
+});
 tableSearch.addEventListener('input', () => renderTable());
 document.getElementById('cancelBtn').addEventListener('click', () => formBackdrop.classList.remove('is-open'));
 formBackdrop.addEventListener('click', e => { if (e.target === formBackdrop) formBackdrop.classList.remove('is-open'); });
