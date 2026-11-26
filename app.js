@@ -626,6 +626,20 @@
 })();
 
 (function () {
+  // Цели Яндекс.Метрики для рекламы в Директе:
+  // phone_click — клик по любой телефонной ссылке (карточки, модалка, контакты);
+  // coop_sent — успешная отправка формы «Сотрудничество» (возврат с ?sent=1).
+  function goal(name) {
+    if (typeof ym === 'function') ym(113688320, 'reachGoal', name);
+  }
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest && e.target.closest('a[href^="tel:"]');
+    if (a) goal('phone_click');
+  });
+  if (new URLSearchParams(window.location.search).get('sent') === '1') goal('coop_sent');
+})();
+
+(function () {
   // После отправки формы FormSubmit возвращает сюда с ?sent=1 —
   // показываем спасибо вместо того, чтобы человек гадал, ушла ли заявка.
   if (new URLSearchParams(window.location.search).get('sent') === '1') {
